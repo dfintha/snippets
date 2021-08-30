@@ -1,0 +1,18 @@
+Personal Snippet Library
+========================
+
+This repository contains numerous code snippets, with variable usability. These
+are just hastily realized ideas, written in various programming languages.
+
+Snippet files may contain a header, explaining the idea behind it, an interface
+section, which denotes the part that would be found in a header file, an
+implementation section, where the functionality itself is written, and a
+demonstration section, with a main function and other helper functions to try it
+out.
+
+The repository does not contain a makefile. Any source code found here can be
+copied to the Compiler Explorer (https://godbolt.org/) by itself, and should
+work.
+
+Under no circumstances should any of these snippets be used in a professional
+environment without thorough testing.
