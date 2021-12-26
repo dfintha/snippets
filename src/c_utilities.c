@@ -6,9 +6,11 @@
 
 // Interface
 
+#include <locale.h>
 #include <math.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -19,6 +21,7 @@ double decround(double x, int decimals);
 long double decroundl(long double x, int decimals);
 void memclr(void *address, size_t length);
 void memswap(void *first, void *second, size_t length);
+char * sizefmt(size_t size);
 bool streq(const char *str1, const char *str2);
 ptrdiff_t strfindc(const char *haystack, int needle);
 ptrdiff_t strfinds(const char *haystack, const char *needle);
@@ -58,6 +61,34 @@ void memswap(void *first, void *second, size_t length) {
     memmove(second, first, length);
     memmove(first, temp, length);
     free(temp);
+}
+
+char * sizefmt(size_t size) {
+    static const char prefixes[] = " KMGTPEZY";
+    static const int max = sizeof(prefixes) - 1;
+    static const int step = 1024;
+    char *buffer = (char *) malloc(16);
+
+    double work = (double) size;
+    short index = 0;
+    while (work >= step && index < max) {
+        work /= step;
+        ++index;
+    }
+
+    static const char* with_prefix = "%.2f %ciB";
+    static const char* without_prefix = "%.2f B";
+    const char *format = (index > 0) ? with_prefix : without_prefix;
+    snprintf(buffer, 15, format, work, prefixes[index]);
+
+    char* decimal = strstr(buffer, ".");
+    if (decimal != NULL) {
+        setlocale(LC_NUMERIC, "");
+        struct lconv* lc = localeconv();
+        *decimal = *lc->decimal_point;
+    }
+
+    return buffer;
 }
 
 bool streq(const char *str1, const char *str2) {
@@ -109,6 +140,11 @@ int main(void) {
     // a memory clearing shall make the buffer a zero-length string
     memclr(buffer1, sizeof(buffer1));
     printf("%lu\n", strlen(buffer1));
+
+    // size formatting
+    char *formatted = sizefmt(2147483648);
+    printf("%s\n", formatted);
+    free(formatted);
 
     return EXIT_SUCCESS;
 }
