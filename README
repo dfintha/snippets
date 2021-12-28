@@ -10,9 +10,9 @@ implementation section, where the functionality itself is written, and a
 demonstration section, with a main function and other helper functions to try it
 out.
 
-The repository does not contain a makefile. Any source code found here can be
-copied to the Compiler Explorer (https://godbolt.org/) by itself, and should
-work.
+The repository does not contain a makefile. Most of the source codes found here
+can be copied to the Compiler Explorer (https://godbolt.org/) by itself, and
+should work (a few ones require external libraries).
 
 Under no circumstances should any of these snippets be used in a professional
 environment without thorough testing.
