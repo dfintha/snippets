@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 const char * boolyn(bool value);
 const char * booltf(bool value);
@@ -21,6 +22,7 @@ double decround(double x, int decimals);
 long double decroundl(long double x, int decimals);
 void memclr(void *address, size_t length);
 void memswap(void *first, void *second, size_t length);
+void shuffle(void *array, size_t size, size_t count);
 char * sizefmt(size_t size);
 bool streq(const char *str1, const char *str2);
 ptrdiff_t strfindc(const char *haystack, int needle);
@@ -61,6 +63,15 @@ void memswap(void *first, void *second, size_t length) {
     memmove(second, first, length);
     memmove(first, temp, length);
     free(temp);
+}
+
+void shuffle(void *array, size_t size, size_t count) {
+    srand(time(NULL));
+    char *bytes = (char *) array;
+    for (size_t i = 0; i < count ; ++i) {
+        const size_t j = rand() % count;
+        memswap(array + i * size, array + j * size, size);
+    }
 }
 
 char * sizefmt(size_t size) {
@@ -145,6 +156,17 @@ int main(void) {
     char *formatted = sizefmt(2147483648);
     printf("%s\n", formatted);
     free(formatted);
+
+    // array shuffling
+    int array[] = { 1, 2, 3, 4, 5 };
+    printf("{ ");
+    for (size_t i = 0; i < sizeof(array) / sizeof(int); ++i)
+        printf("%d ", array[i]);
+    printf("}\n{ ");
+    shuffle(array, sizeof(int), 5);
+    for (size_t i = 0; i < sizeof(array) / sizeof(int); ++i)
+        printf("%d ", array[i]);
+    printf("}\n");
 
     return EXIT_SUCCESS;
 }
