@@ -1,0 +1,10 @@
+# undivided.screenrc
+# GNU screen commands to hide any visible separation between frames.
+# Author: Dénes Fintha
+# Year: 2022
+# ---------------------------------------------------------------------------- #
+
+# Commands
+
+hardstatus ignore
+caption string "%{00} "
