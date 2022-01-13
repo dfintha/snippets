@@ -10,13 +10,14 @@
 // Interface
 
 #include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
 
 char * b64encode(const uint8_t *data, size_t length);
 uint8_t * b64decode(const char *data);
 
 // Implementation
+
+#include <stdlib.h>
+#include <string.h>
 
 char * b64encode(const uint8_t *data, size_t length) {
     static const char pad = '=';
