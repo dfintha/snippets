@@ -12,7 +12,8 @@ out.
 
 The repository does not contain a makefile. Most of the source codes found here
 can be copied to the Compiler Explorer (https://godbolt.org/) by itself, and
-should work (a few ones require external libraries).
+should work (there are some that require external libraries, some that are in
+different languages, and some that aren't code but rather instructions).
 
 Under no circumstances should any of these snippets be used in a professional
 environment without thorough testing.
