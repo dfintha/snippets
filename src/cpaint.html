@@ -1,0 +1,192 @@
+<!-- cpaint.html
+     Simple source code colorization for C/C++ code snippets in HTML DOM
+     text elements.
+     Author: Dénes Fintha
+     Year: 2022
+---------------------------------------------------------------------------- -->
+
+<!doctype html>
+<html><head><title>cpaint.html</title><style>
+
+/* Stylesheet */
+
+:root {
+    --cpaint-text-font: 'Inconsolata', 'Consolas', monospace;
+    --cpaint-text-color: black;
+    --cpaint-comment-color: gray;
+    --cpaint-keyword-color: blue;
+    --cpaint-typename-color: teal;
+    --cpaint-preprocessor-color: darkslategray;
+    --cpaint-number-color: forestgreen;
+    --cpaint-string-color: darkgoldenrod;
+    --cpaint-macro-color: darkviolet;
+}
+
+.codeblock {
+    font-family: var(--cpaint-text-font);
+    color: var(--cpaint-text-color);
+}
+
+.cpaint-comment,
+.cpaint-comment .cpaint-keyword,
+.cpaint-comment .cpaint-typename,
+.cpaint-comment .cpaint-preprocessor,
+.cpaint-comment .cpaint-number,
+.cpaint-comment .cpaint-string,
+.cpaint-comment .cpaint-macro
+{
+    color: var(--cpaint-comment-color);
+}
+
+.cpaint-keyword {
+    color: var(--cpaint-keyword-color);
+}
+
+.cpaint-typename {
+    color: var(--cpaint-typename-color);
+}
+
+.cpaint-preprocessor {
+    color: var(--cpaint-preprocessor-color);
+}
+
+.cpaint-number
+{
+    color: var(--cpaint-number-color);
+}
+
+.cpaint-string,
+.cpaint-string .cpaint-comment,
+.cpaint-string .cpaint-keyword,
+.cpaint-string .cpaint-typename,
+.cpaint-string .cpaint-preprocessor,
+.cpaint-string .cpaint-number,
+.cpaint-string .cpaint-macro
+{
+    color: var(--cpaint-string-color);
+}
+
+.cpaint-macro {
+    color: var(--cpaint-macro-color);
+}
+
+</style></head><body><pre class="codeblock">
+
+#include &lt;locale.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+#define HELLO(name) printf("Hello, %s%c\n", name, '!')
+
+/*
+    Multiline comment, with various keywords and values inserted into it, such
+    as char, typename, 0, and "Hello".
+*/
+
+char * sizefmt(size_t size) {
+    static const char prefixes[] = " KMGTPEZY";
+    static const int max = sizeof(prefixes) - 1;
+    static const int step = 1024;
+    char *buffer = (char *) malloc(16);
+
+    double work = (double) size;
+    short index = 0x00;
+    while (work >= step && index < max) {
+        work /= step;
+        ++index;
+    }
+
+    static const char* with_prefix = "%.2f %ciB";
+    static const char* without_prefix = "%.2f B";
+    const char *format = (index > 0) ? with_prefix : without_prefix;
+    snprintf(buffer, 15, format, work, prefixes[index]);
+
+    char* decimal = strstr(buffer, ".");
+    if (decimal != NULL) {
+        setlocale(LC_NUMERIC, "");
+        struct lconv* lc = localeconv();
+        *decimal = *lc->decimal_point;
+    }
+
+    return buffer;
+}
+
+int main(void) {
+    char char_normal = 'A';
+    char char_escaped_special = '\n';
+    char char_escaped_octal = '\065';
+    char char_escaped_hexadecimal = '\xFF';
+
+    char *output = sizefmt(3423428542734);
+    printf("%s\n", output);
+    free(output);
+
+    const char *string = "A and B";
+
+    // Single-line comment
+
+    HELLO("world");
+    return EXIT_SUCCESS;
+}
+
+</pre><script>
+
+function cpaint(textNode) {
+    let re_keyword = new RegExp(
+        "\\b(alignas|alignof|and|and_eq|asm|atomic_cancel|atomic_commit|atomic_noexcept|auto|" +
+        "bitand|bitor|bool|break|case|catch|char|char8_t|char16_t|char32_t|class|compl|concept|" +
+        "const|consteval|constexpr|constinit|const_cast|continue|co_await|co_return|co_yield|" +
+        "decltype|default|delete|do|double|dynamic_cast|else|enum|explicit|export|extern|false|" +
+        "float|for|friend|goto|if|inline|int|long|mutable|namespace|new|noexcept|not|not_eq|" +
+        "nullptr|operator|or|or_eq|private|protected|public|reflexpr|register|reinterpret_cast|" +
+        "requires|return|short|signed|sizeof|static|static_assert|static_cast|struct|switch|" +
+        "synchronized|template|this|thread_local|throw|true|try|typedef|typeid|typename|union|" +
+        "unsigned|using|virtual|void|volatile|wchar_t|while|xor|xor_eq)\\b",
+        "gm"
+    );
+    let re_clib_type = new RegExp(
+        "\\b(ssize_t|tm|time_t|clock_t|timespec|thrd_t|mtx_t|cnd_t|tss_t|fpos_t|atomic_bool|" +
+        "atomic_char|atomic_schar|atomic_uchar|atomic_short|atomic_ushort|atomic_int|atomic_uint|" +
+        "atomic_long|atomic_ulong|atomic_llong|atomic_ullong|atomic_char16_t|atomic_char32_t|" +
+        "atomic_wchar_t|atomic_int_least8_t|atomic_uint_least8_t|atomic_int_least16_t|" +
+        "atomic_uint_least16_t|atomic_int_least32_t|atomic_uint_least32_t|atomic_int_least64_t|" +
+        "atomic_uint_least64_t|atomic_int_fast8_t|atomic_uint_fast8_t|atomic_int_fast16_t|" +
+        "atomic_uint_fast16_t|atomic_int_fast32_t|atomic_uint_fast32_t|atomic_int_fast64_t|" +
+        "atomic_uint_fast64_t|atomic_intptr_t|atomic_uintptr_t|atomic_size_t|atomic_ptrdiff_t|" +
+        "atomic_intmax_t|atomic_uintmax_t|memory_order|atomic_flag|va_list|ptrdiff_t|max_align_t|" +
+        "div_t|ldiv_t|lldiv_t|imaxdiv_t|float_t|double_t|size_t|FILE|fenv_t|fexcept_t|int8_t|" +
+        "int16_t|int32_t|int64_t|int_fast8_t|int_fast16_t|int_fast32_t|int_fast64_t|int_least8_t|" +
+        "int_least16_t|int_least32_t|int_least64_t|intmax_t|intptr_t|uint8_t|uint16_t|uint32_t|" +
+        "uint64_t|uint_fast8_t|uint_fast16_t|uint_fast32_t|uint_fast64_t|uint_least8_t|" +
+        "uint_least16_t|uint_least32_t|uint_least64_t|uintmax_t|uintptr_t|lconv)\\b",
+        "gm"
+    );
+    let re_preprocessor = new RegExp("^(\\s*#.*)$", "gm");
+    let re_int_number = new RegExp("\\b((?:0x[0-9a-fA-F]+|0b[01]+|[0-9]+)[Ll]{0,2})\\b", "gm");
+    let re_float_number = new RegExp("\\b((?:\.[0-9]+|[0-9]+\.|[0-9]+\.[0-9]+)[LlFf]?)\\b", "gm");
+    let re_string = new RegExp("(\\\"[^\\\"]*\\\")", "gm");
+    let re_char = new RegExp("('(?:.|\\\\\\w+)')", "gm");
+    let re_line_comment = new RegExp("(//.*$)", "gm");
+    let re_interval_comment = new RegExp("(/\\*.*\\*/)", "gms");
+    let re_macro = new RegExp("([A-Z_]{3,})", "gm");
+
+    textNode.innerHTML = textNode.innerHTML
+        .replace(re_keyword, "<span class='cpaint-keyword'>$1</span>")
+        .replace(re_char, "<span class='cpaint-string'>$1</span>")
+        .replace(re_clib_type, "<span class='cpaint-typename'>$1</span>")
+        .replace(re_int_number, "<span class='cpaint-number'>$1</span>")
+        .replace(re_float_number, "<span class='cpaint-number'>$1</span>")
+        .replace(re_string, "<span class='cpaint-string'>$1</span>")
+        .replace(re_line_comment, "<span class='cpaint-comment'>$1</span>")
+        .replace(re_interval_comment, "<span class='cpaint-comment'>$1</span>")
+        .replace(re_preprocessor, "<span class='cpaint-preprocessor'>$1</span>")
+        .replace(re_macro, "<span class='cpaint-macro'>$1</span>");
+}
+
+let blocks = document.getElementsByClassName("codeblock");
+for (let i = 0; i < blocks.length; ++i) {
+    cpaint(blocks[i]);
+}
+
+</script></body></html>
