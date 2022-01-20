@@ -1,0 +1,15 @@
+<!-- self_erase.html
+     A JavaScript script block on an HTML page, which erases itself after its
+     execution.
+     Author: Dénes Fintha
+     Year: 2022
+---------------------------------------------------------------------------- -->
+
+<!doctype html>
+<html><head><title>self_erase.html</title><style></style></head><body><script>
+     let body = document.getElementsByTagName("body")[0];
+     let h1 = document.createElement("h1");
+     h1.innerHTML = "It works!"
+     body.appendChild(h1);
+     body.removeChild(document.getElementsByTagName("script")[0]);
+</script></body></html>
