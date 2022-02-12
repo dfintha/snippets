@@ -32,6 +32,14 @@
         b = swap##_##a##_##b##_##type;          \
     MACRO_SCOPE_END
 
+#define prefix_sum(results, numbers, length)            \
+    MACRO_SCOPE_BEGIN                                   \
+        results[0] = numbers[0];                        \
+        for (size_t i = 1; i < length; ++i) {           \
+            results[i] = results[i - 1] + numbers[i];   \
+        }                                               \
+    MACRO_SCOPE_END
+
 typedef int(*char_transformation_fn)(int);
 typedef int(*char_predicate_fn)(int);
 
@@ -354,6 +362,18 @@ int main(UNUSED(int argc), UNUSED(char **argv)) {
     printf("%-2d | %-18s | %-19s\n", X, MACRO_STRINGIFY(X), MACRO_XSTRINGIFY(X));
     printnl();
 #undef X
+
+    int a[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+    int b[10];
+    prefix_sum(b, a, 10);
+    puts("PREFIX SUM");
+    puts("a                        | b [prefix_sum(b, a, 10)]");
+    puts("-------------------------|-------------------------------");
+    print_array(a, sizeof(a) / sizeof(int));
+    fputs(" | ", stdout);
+    print_array(b, sizeof(b) / sizeof(int));
+    printnl();
+    printnl();
 
     puts("NOTES");
     puts(" 1. The UNUSED macro is demonstrated by the compilation yielding");
