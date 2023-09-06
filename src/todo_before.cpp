@@ -55,8 +55,10 @@ enum {
             return 0;                                                           \
         }(current_month_str);                                                   \
         constexpr unsigned current_day =                                        \
-            unsigned((current_day_str[0] - '0') * 10 +                          \
-                     (current_day_str[1] - '0'));                               \
+            current_day_str[0] == ' '                                           \
+                ? unsigned(current_day_str[1] - '0')                            \
+                : unsigned((current_day_str[0] - '0') * 10 +                    \
+                           (current_day_str[1] - '0'));                         \
                                                                                 \
         constexpr bool past_year = current_year < y;                            \
         constexpr bool past_month = current_year == y && current_month < m;     \
