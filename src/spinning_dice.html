@@ -1,0 +1,76 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Spinning Dice</title>
+    <style>
+      body {
+        background-color: #222222;
+      }
+      .spin {
+        position: relative;
+        transform-style: preserve-3d;
+        animation: spin 8s linear infinite;
+      }
+      .spin > * {
+        position: absolute;
+        transform-style: preserve-3d;
+      }
+      .spin .unspin {
+        animation: unspin 8s linear infinite;
+      }
+      @keyframes spin {
+        from { transform: rotateX(-0.1turn) rotateY(0turn); }
+        to { transform: rotateX(-0.1turn) rotateY(1turn); }
+      }
+      @keyframes unspin {
+        from { transform: rotateY(0turn); }
+        to { transform: rotateY(-1turn); }
+      }
+      .wrapper {
+        padding: 200px;
+        display: flex;
+        justify-content: center;
+      }
+      .dice-side {
+        display: flex;
+        width: 300px;
+        height: 290px;
+        padding-bottom: 10px;
+        opacity: 0.75;
+        box-shadow: inset 2px 2px magenta, inset -2px -2px magenta;
+        background-color: #000000;
+        color: #C33682;
+        justify-content: center;
+        align-items: center;
+        font-size: 70px;
+        line-height: 75px;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <div class="spin" style="width: 300px; height: 300px">
+        <div class="dice-side" style="transform: rotateX(90deg) translateZ(150px);">
+          ●&nbsp; &nbsp; &nbsp;●<br />●&nbsp; &nbsp; &nbsp;●<br />●&nbsp; &nbsp; &nbsp;●
+        </div>
+        <div class="dice-side" style="transform: rotateY(90deg) translateZ(150px);">
+          &nbsp; &nbsp; &nbsp; &nbsp; ●<br /><br />● &nbsp; &nbsp; &nbsp; &nbsp;
+        </div>
+        <div class="dice-side" style="transform: translateZ(-150px);">
+          ● &nbsp; &nbsp; &nbsp; &nbsp;<br />●<br />&nbsp; &nbsp; &nbsp; &nbsp; ●
+        </div>
+        <div class="dice-side" style="transform: translateZ(150px);">
+          ●&nbsp; &nbsp; &nbsp;●<br /><br />●&nbsp; &nbsp; &nbsp;●
+        </div>
+        <div class="dice-side" style="transform: rotateY(90deg) translateZ(-150px);">
+          ●&nbsp; &nbsp; &nbsp; ●<br />●<br />●&nbsp; &nbsp; &nbsp; ●
+        </div>
+        <div class="dice-side" style="transform: rotateX(90deg) translateZ(-150px);">
+          ●
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
