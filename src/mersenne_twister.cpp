@@ -15,10 +15,10 @@
 
 namespace my {
     template <typename UIntT,
-              UIntT N, UIntT M, UIntT W, UIntT F,
-              UIntT R, UIntT A, UIntT U, UIntT D,
-              UIntT S, UIntT B, UIntT T, UIntT C,
-              UIntT L>
+              size_t W, size_t N, size_t M, size_t R,
+              UIntT A, UIntT U, UIntT D, UIntT S,
+              UIntT B, UIntT T, UIntT C, UIntT L,
+              UIntT F>
     class mersenne_twister_engine {
     public:
         using result_type = UIntT;
@@ -169,14 +169,20 @@ namespace my {
     };
 
     using mt19937 = mersenne_twister_engine<
-        uint32_t, 624, 397, 32, 1812433253, 31,
-        0x9908B0DF, 11, 0xFFFFFFFF, 7,
-        0x9D2C5680, 15, 0xEFC60000, 18>;
+        uint32_t, 32, 624, 397, 31,
+        0X9908B0DF, 11,
+        0XFFFFFFFF, 7,
+        0X9D2C5680, 15,
+        0XEFC60000, 18,
+        1812433253>;
 
     using mt19937_64 = mersenne_twister_engine<
-        uint64_t, 312, 156, 64, 6364136223846793005, 31,
-        0xB5026F5AA96619E9, 29, 0x5555555555555555, 17,
-        0x71D67FFFEDA60000, 37, 0xFFF7EEE000000000, 43>;
+        uint64_t, 64, 312, 156, 31,
+        0XB5026F5AA96619E9, 29,
+        0x5555555555555555, 17,
+        0X71D67FFFEDA60000, 37,
+        0XFFF7EEE000000000, 43,
+        6364136223846793005>;
 }
 
 // Demonstration
