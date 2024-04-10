@@ -96,14 +96,46 @@ uint8_t * b64decode(const char *data) {
 
 #include <stdio.h>
 
+static void test_base64(const char *original, const char *reference) {
+    const size_t length = strlen(original);
+    char *encoded = b64encode((const uint8_t *) original, length);
+    char *decoded = (char *) b64decode(encoded);
+    printf(
+        "  Original: '%s'\n"
+        "   Encoded: '%s'\n"
+        " Reference: '%s'\n"
+        "   Decoded: '%s'\n\n",
+        original,
+        encoded,
+        reference,
+        decoded
+    );
+    free(encoded);
+    free(decoded);
+}
+
 int main(void) {
-    const char *hello_original = "Hello, world!";
-    const char *hello_reference = "SGVsbG8sIHdvcmxkIQ==";
-    char *hello_encoded = b64encode((uint8_t *) hello_original, strlen(hello_original));
-    uint8_t *hello_decoded = b64decode(hello_encoded);
-    printf("%s -E-> %s (should be %s)\n", hello_original, hello_encoded, hello_reference);
-    printf("%s -D-> %s (should be %s)\n", hello_encoded, (char *) hello_decoded, hello_original);
-    free(hello_encoded);
-    free(hello_decoded);
+    printf("Base-64 Tests\n\n");
+
+    test_base64(
+        "Hello, world!",
+        "SGVsbG8sIHdvcmxkIQ=="
+    );
+    test_base64(
+        "Many hands make light work.",
+        "TWFueSBoYW5kcyBtYWtlIGxpZ2h0IHdvcmsu"
+    );
+    test_base64(
+        "light w",
+        "bGlnaHQgdw=="
+    );
+    test_base64(
+        "light wo",
+        "bGlnaHQgd28="
+    );
+    test_base64(
+        "light wor",
+        "bGlnaHQgd29y"
+    );
     return EXIT_SUCCESS;
 }
