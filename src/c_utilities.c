@@ -10,35 +10,20 @@
 #include <stddef.h>
 #include <stdio.h>
 
-#define MACRO_SCOPE_BEGIN   do {
-#define MACRO_SCOPE_END     } while (0)
-#define MACRO_CONCAT(x1, x2) x1##x2
-#define MACRO_XCONCAT_2(x1, x2) MACRO_CONCAT(x1, x2)
-#define MACRO_XCONCAT_3(x1, x2, x3) MACRO_XCONCAT_2(x1, MACRO_XCONCAT_2(x2, x3))
-#define MACRO_XCONCAT_4(x1, x2, x3, x4) MACRO_XCONCAT_2(x1, MACRO_XCONCAT_3(x2, x3, x4))
-#define MACRO_STRINGIFY(x) #x
-#define MACRO_XSTRINGIFY(x) MACRO_STRINGIFY(x)
-
-#if defined(__GNUC__)
-#define UNUSED(...) MACRO_XCONCAT_3(__VA_ARGS__, _unused_line, __LINE__) __attribute__((unused))
-#else
-#define UNUSED(...) MACRO_XCONCAT_3(__VA_ARGS__, _unused_line, __LINE__)
-#endif
-
 #define primitive_swap(a, b, type)              \
-    MACRO_SCOPE_BEGIN                           \
+    do {                                        \
         type swap##_##a##_##b##_##type = a;     \
         a = b;                                  \
         b = swap##_##a##_##b##_##type;          \
-    MACRO_SCOPE_END
+    } while (0)
 
 #define prefix_sum(results, numbers, length)            \
-    MACRO_SCOPE_BEGIN                                   \
+    do {                                                \
         results[0] = numbers[0];                        \
         for (size_t i = 1; i < length; ++i) {           \
             results[i] = results[i - 1] + numbers[i];   \
         }                                               \
-    MACRO_SCOPE_END
+    } while (0)
 
 typedef int(*char_transformation_fn)(int);
 typedef int(*char_predicate_fn)(int);
@@ -261,7 +246,7 @@ static void print_array(int *array, int length) {
     putc('}', stdout);
 }
 
-int main(UNUSED(int argc), UNUSED(char **argv)) {
+int main(void) {
     puts("BOOLEAN TO STRING FORMATTING");
     puts("value | boolyn(value) | booltf(value)");
     puts("------|---------------|--------------");
@@ -355,14 +340,6 @@ int main(UNUSED(int argc), UNUSED(char **argv)) {
     printf("%-6d | %-6d | after swap\n", value1, value2);
     printnl();
 
-#define X 42
-    puts("STRINGIFICATION");
-    puts("X  | MACRO_STRINGIFY(X) | MACRO_XSTRINGIFY(X)");
-    puts("---|--------------------|--------------------");
-    printf("%-2d | %-18s | %-19s\n", X, MACRO_STRINGIFY(X), MACRO_XSTRINGIFY(X));
-    printnl();
-#undef X
-
     int a[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
     int b[10];
     prefix_sum(b, a, 10);
@@ -375,13 +352,11 @@ int main(UNUSED(int argc), UNUSED(char **argv)) {
     printnl();
     printnl();
 
-    puts("NOTES");
-    puts(" 1. The UNUSED macro is demonstrated by the compilation yielding");
-    puts("    no warnings for unused variables.");
-    puts(" 2. Functions not explicitly tested are either re-used by another");
-    puts("    function, thus proving they work, or are way too simple or");
-    puts("    similar to other function(s), that demonstrating them is not");
-    puts("    necessary.");
+    puts("NOTE:");
+    puts("Functions not explicitly tested are either re-used by another ");
+    puts("function, thus proving they work, or are way too simple or ");
+    puts("similar to other function(s), that demonstrating them is not ");
+    puts("necessary.");
 
     return EXIT_SUCCESS;
 }
