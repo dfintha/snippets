@@ -126,25 +126,40 @@ constexpr const bool is_container_v = is_container<Type>::value;
 
 template <typename Type>
 std::string typename_of() {
-    const std::type_info& type = typeid(Type);
-    std::string name = type.name();
+    static const std::string mangled = typeid(Type).name();
+    static bool initialized = false;
+    static std::string demangled;
 
-#if defined(__clang__) || defined(__GNUC__)
-    int dummy;
-    const char *c_str = name.c_str();
-    char *demangled = abi::__cxa_demangle(c_str, nullptr, nullptr, &dummy);
-    name = demangled;
-    std::free(demangled);
+    if (initialized)
+        return demangled;
+
+#if defined(__GLIBCXX__)
+    int status;
+    char *buffer = abi::__cxa_demangle(
+        mangled.c_str(),
+        nullptr,
+        nullptr,
+        &status
+    );
+    if (status == 0) {
+        demangled = buffer;
+        free(buffer);
+    } else {
+        demangled = mangled;
+    }
+#else
+    demangled = mangled;
 #endif
 
     while (true) {
-        const size_t pos = name.find("> >");
+        const size_t pos = demangled.find("> >");
         if (pos == std::string::npos)
             break;
-        name.replace(pos, 3, ">>");
+        demangled.replace(pos, 3, ">>");
     }
 
-    return name;
+    initialized = true;
+    return demangled;
 }
 
 template <typename Type>
