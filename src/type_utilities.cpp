@@ -1,5 +1,5 @@
 // type_utilities.cpp
-// Type traits and related utilities for C++.
+// Type traits and related utilities for C++ (C++17 and above).
 // Author: Dénes Fintha
 // Year: 2022
 // -------------------------------------------------------------------------- //
@@ -87,6 +87,26 @@ template <typename... ExprTypes>
 struct evaluable : std::is_void<std::void_t<ExprTypes...>>
 {};
 
+namespace detail {
+    template <typename... NewArgs,
+              template <typename...> typename Class,
+              typename... OldArgs>
+    auto replace_template_arguments(const Class<OldArgs...>&) {
+        return Class<NewArgs...>{};
+    }
+}
+
+template <typename Class, typename... NewArgs>
+struct replace_template_arguments {
+    using type = decltype(
+        detail::replace_template_arguments<NewArgs...>(std::declval<Class>())
+    );
+};
+
+template <typename Class, typename... NewArgs>
+using replace_template_arguments_t =
+    typename replace_template_arguments<Class, NewArgs...>::type;
+
 template <typename Type>
 struct is_container {
 private:
@@ -127,31 +147,53 @@ std::string typename_of() {
     return name;
 }
 
+template <typename Type>
+std::string typename_of(const Type&) {
+    return typename_of<Type>();
+}
+
 // Demonstration
 
-#include <iostream>
+#include <cstdio>
 #include <vector>
 
+#define TEST_BOOL(...)                                                  \
+    do {                                                                \
+        constexpr bool conditional = __VA_ARGS__;                       \
+        printf(#__VA_ARGS__ ": %s\n", conditional ? "true" : "false");  \
+    } while (false)
+
+#define TEST_STRING(...)                                \
+    do {                                                \
+        const auto result = __VA_ARGS__;                \
+        printf(#__VA_ARGS__ ": %s\n", result.c_str());  \
+    } while (false)
+
 int main() {
-    // these unused volatile values can be checked via the compiler explorer disassembly
+    TEST_BOOL(any_applies_v<bool, std::is_floating_point, std::is_integral>);
+    TEST_BOOL(any_applies_v<bool, std::is_floating_point, std::is_function>);
+    fputc('\n', stdout);
 
-    constexpr volatile auto test_any_applies =
-        any_applies_v<bool, std::is_floating_point, std::is_integral>;
+    TEST_BOOL(all_applies_v<bool, std::is_trivial, std::is_integral>);
+    TEST_BOOL(all_applies_v<bool, std::is_function, std::is_integral>);
+    fputc('\n', stdout);
 
-    constexpr volatile auto test_all_applies =
-        all_applies_v<bool, std::is_trivial, std::is_integral>;
+    TEST_BOOL(any_of_types_v<bool, int, float, bool>);
+    TEST_BOOL(any_of_types_v<bool, int, float, double>);
+    fputc('\n', stdout);
 
-    constexpr volatile auto test_any_of_types =
-        any_of_types_v<bool, int, float, bool>;
+    TEST_BOOL(decays_to_same_v<int *, int[12]>);
+    TEST_BOOL(decays_to_same_v<int *, double[12]>);
+    fputc('\n', stdout);
 
-    constexpr volatile auto test_decays_to_same =
-        decays_to_same_v< int *, int[12]>;
+    TEST_BOOL(is_container_v<std::vector<int>>);
+    TEST_BOOL(is_container_v<int>);
+    fputc('\n', stdout);
 
-    constexpr volatile auto test_is_container =
-        is_container_v<std::vector<int>>;
-
-    std::string test_typename_of = typename_of<std::vector<std::string>>();
-    std::cout << test_typename_of << std::endl;
+    std::vector<int> int_vector;
+    replace_template_arguments_t<decltype(int_vector), double> double_vector;
+    TEST_STRING(typename_of(int_vector));
+    TEST_STRING(typename_of(double_vector));
 
     return 0;
 }
