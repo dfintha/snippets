@@ -124,6 +124,49 @@ public:
 template <typename Type>
 constexpr const bool is_container_v = is_container<Type>::value;
 
+namespace detail {
+    template <typename Type>
+    struct cv_prefix_of {
+        static constexpr const char *value = "";
+    };
+
+    template <typename Type>
+    struct cv_prefix_of<const Type> {
+        static constexpr const char *value = "const ";
+    };
+
+    template <typename Type>
+    struct cv_prefix_of<volatile Type> {
+        static constexpr const char *value = "volatile ";
+    };
+
+    template <typename Type>
+    struct cv_prefix_of<const volatile Type> {
+        static constexpr const char *value = "const volatile ";
+    };
+
+    template <typename Type>
+    constexpr const char *cv_prefix_of_v = cv_prefix_of<Type>::value;
+
+    template <typename Type>
+    struct ref_suffix_of {
+        static constexpr const char *value = "";
+    };
+
+    template <typename Type>
+    struct ref_suffix_of<Type&> {
+        static constexpr const char *value = "&";
+    };
+
+    template <typename Type>
+    struct ref_suffix_of<Type&&> {
+        static constexpr const char *value = "&&";
+    };
+
+    template <typename Type>
+    constexpr const char *ref_suffix_of_v = ref_suffix_of<Type>::value;
+}
+
 template <typename Type>
 std::string typename_of() {
     static const std::string mangled = typeid(Type).name();
@@ -131,7 +174,7 @@ std::string typename_of() {
     static std::string demangled;
 
     if (initialized)
-        return demangled;
+     return demangled;
 
 #if defined(__GLIBCXX__)
     int status;
@@ -158,13 +201,12 @@ std::string typename_of() {
         demangled.replace(pos, 3, ">>");
     }
 
+    const char *prefix = detail::cv_prefix_of_v<std::remove_reference_t<Type>>;
+    const char *suffix = detail::ref_suffix_of_v<Type>;
+    demangled = prefix + demangled + suffix;
+
     initialized = true;
     return demangled;
-}
-
-template <typename Type>
-std::string typename_of(const Type&) {
-    return typename_of<Type>();
 }
 
 // Demonstration
@@ -207,8 +249,14 @@ int main() {
 
     std::vector<int> int_vector;
     replace_template_arguments_t<decltype(int_vector), double> double_vector;
-    TEST_STRING(typename_of(int_vector));
-    TEST_STRING(typename_of(double_vector));
+    TEST_STRING(typename_of<decltype(int_vector)>());
+    TEST_STRING(typename_of<decltype(double_vector)>());
+
+    const auto& int_vector_cref = int_vector;
+    const volatile auto& int_vector_cvref = int_vector;
+    TEST_STRING(typename_of<decltype(int_vector_cref)>());
+    TEST_STRING(typename_of<decltype(int_vector_cvref)>());
+    TEST_STRING(typename_of<volatile int&&>());
 
     return 0;
 }
