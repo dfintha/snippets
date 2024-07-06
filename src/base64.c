@@ -1,8 +1,7 @@
 // base64.c
 // Base64 encoding and decoding functions. Results shall be freed by the caller.
 // In C++, an std::string or an std::vector<uint8_t> can be used to store the
-// result of a conversion, and utilize RAII. Also, an std::map can be used for
-// the lookup during decoding.
+// result of a conversion, and utilize RAII.
 // Author: Dénes Fintha
 // Year: 2021
 // -------------------------------------------------------------------------- //
@@ -15,8 +14,14 @@
 char * b64encode(const uint8_t *data, size_t length);
 uint8_t * b64decode(const char *data);
 
+int64_t b64toi64(const char *data);
+uint64_t b64tou64(const char *data);
+int32_t b64toi32(const char *data);
+uint32_t b64tou32(const char *data);
+
 // Implementation
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -92,8 +97,29 @@ uint8_t * b64decode(const char *data) {
     return result;
 }
 
+#define DEFINE_B64_DECODE_FUNCTION(NAME, TYPE, DATALENGTH)      \
+    TYPE NAME(const char *data) {                               \
+        union {                                                 \
+            TYPE to;                                            \
+            uint8_t from[sizeof(TYPE)];                         \
+        } converter;                                            \
+        assert(strlen(data) == DATALENGTH);                     \
+        uint8_t *bytes = b64decode(data);                       \
+        memcpy(converter.from, bytes, sizeof(TYPE));            \
+        free(bytes);                                            \
+        return converter.to;                                    \
+    }
+
+DEFINE_B64_DECODE_FUNCTION(b64toi64, int64_t, 12)
+DEFINE_B64_DECODE_FUNCTION(b64tou64, uint64_t, 12)
+DEFINE_B64_DECODE_FUNCTION(b64toi32, int32_t, 8)
+DEFINE_B64_DECODE_FUNCTION(b64tou32, uint32_t, 8)
+
+#undef DEFINE_B64_DECODE_FUNCTION
+
 // Demonstration
 
+#include <inttypes.h>
 #include <stdio.h>
 
 static void test_base64(const char *original, const char *reference) {
@@ -113,6 +139,25 @@ static void test_base64(const char *original, const char *reference) {
     free(encoded);
     free(decoded);
 }
+
+#define test_base64_number(TYPE, VALUE, REFERENCE, FORMAT, FUNCTION)    \
+    do {                                                                \
+        const TYPE value = VALUE;                                       \
+        const size_t length = sizeof(TYPE);                             \
+        char *encoded = b64encode((const uint8_t *) &value, length);    \
+        TYPE decoded = FUNCTION(encoded);                               \
+        printf(                                                         \
+            "  Original: %" FORMAT " (" #TYPE ")\n"                     \
+            "   Encoded: '%s'\n"                                        \
+            " Reference: '%s'\n"                                        \
+            "   Decoded: %" FORMAT "\n\n",                              \
+            value,                                                      \
+            encoded,                                                    \
+            REFERENCE,                                                  \
+            decoded                                                     \
+        );                                                              \
+        free(encoded);                                                  \
+    } while (0)
 
 int main(void) {
     printf("Base-64 Tests\n\n");
@@ -137,5 +182,11 @@ int main(void) {
         "light wor",
         "bGlnaHQgd29y"
     );
+
+    test_base64_number(uint64_t, 0x1A1A1A1A1A1A1A1A, "GhoaGhoaGho=", PRIu64, b64tou64);
+    test_base64_number(int64_t, 0x2B2B2B2B2B2B2B2B, "KysrKysrKys=", PRIi64, b64toi64);
+    test_base64_number(uint32_t, 0x1A1A1A1A, "GhoaGg==", PRIu32, b64tou32);
+    test_base64_number(int32_t, 0x2B2B2B2B, "KysrKw==", PRIi32, b64toi32);
+
     return EXIT_SUCCESS;
 }
