@@ -91,9 +91,12 @@ namespace detail {
     template <typename... NewArgs,
               template <typename...> typename Class,
               typename... OldArgs>
-    auto replace_template_arguments(const Class<OldArgs...>&) {
-        return Class<NewArgs...>{};
-    }
+    auto replace_template_arguments(const Class<OldArgs...>&) -> Class<NewArgs...>;
+
+    template <template <typename...> typename NewClass,
+              template <typename...> typename OldClass,
+              typename... Args>
+    auto replace_template(const OldClass<Args...>&) -> NewClass<Args...>;
 }
 
 template <typename Class, typename... NewArgs>
@@ -106,6 +109,24 @@ struct replace_template_arguments {
 template <typename Class, typename... NewArgs>
 using replace_template_arguments_t =
     typename replace_template_arguments<Class, NewArgs...>::type;
+
+template <template <typename...> typename NewClass, typename OldClass>
+struct replace_template {
+    using type = decltype(
+        detail::replace_template<NewClass>(std::declval<OldClass>())
+    );
+};
+
+template <template <typename...> typename NewClass, typename OldClass>
+using replace_template_t =
+    typename replace_template<NewClass, OldClass>::type;
+
+template <template <typename...> typename OldClass,
+          template <typename...> typename NewClass,
+          typename... Args>
+struct replace_template {
+    using type = NewClass<Args...>;
+};
 
 template <typename Type>
 struct is_container {
